@@ -6,12 +6,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Config DB via variables d'environnement
+// === CONFIG DB AVEC VARIABLES D'ENV (Render + Railway) ===
 const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST,               // ex: junction.proxy.rlwy.net
+  port: process.env.DB_PORT || 3306,       // ex: 54997 (sinon 3306 par défaut)
+  user: process.env.DB_USER,               // ex: root
+  password: process.env.DB_PASS,           // mot de passe Railway
+  database: process.env.DB_NAME,           // ex: railway
 };
 
 async function getConnection() {
