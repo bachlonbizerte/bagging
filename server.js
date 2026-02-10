@@ -6,35 +6,57 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// === CONFIG DB AVEC VARIABLES D'ENV (Render + Railway) ===
+// === CONFIG DB AVEC VARIABLES D'ENV ===
 const dbConfig = {
-  host: process.env.DB_HOST,               // ex: mainline.proxy.rlwy.net
-  port: process.env.DB_PORT || 3306,       // ex: 16259 (sinon 3306 par défaut)
-  user: process.env.DB_USER,               // ex: root
-  password: process.env.DB_PASS,           // mot de passe Railway
-  database: process.env.DB_NAME,           // ex: railway
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
 };
 
 async function getConnection() {
   return await mysql.createConnection(dbConfig);
 }
 
-// Simple route test
+// Test
 app.get('/', (req, res) => {
   res.json({ status: 'OK', message: 'Badge API en ligne' });
 });
 
 // POST /api/users -> créer un utilisateur + badge
 app.post('/api/users', async (req, res) => {
-  const { badge_id, name, email, role } = req.body;
+  const {
+    badge_id,
+    name,
+    email,
+    role,
+    departement,
+    numero,
+    ville,
+    societe,
+  } = req.body;
+
   if (!badge_id || !name) {
     return res.status(400).json({ message: 'badge_id et name sont obligatoires' });
   }
+
   try {
     const conn = await getConnection();
     await conn.execute(
-      'INSERT INTO users (badge_id, name, email, role) VALUES (?,?,?,?)',
-      [badge_id, name, email || null, role || null]
+      `INSERT INTO users
+        (badge_id, name, email, role, departement, numero, ville, societe)
+       VALUES (?,?,?,?,?,?,?,?)`,
+      [
+        badge_id,
+        name,
+        email || null,
+        role || null,
+        departement || null,
+        numero || null,
+        ville || null,
+        societe || null,
+      ]
     );
     await conn.end();
     res.status(201).json({ message: 'User créé' });
@@ -49,7 +71,11 @@ app.get('/api/users', async (req, res) => {
   try {
     const conn = await getConnection();
     const [rows] = await conn.execute(
-      'SELECT badge_id, name, email, role, created_at FROM users ORDER BY id DESC'
+      `SELECT badge_id, name, email, role,
+              departement, numero, ville, societe,
+              created_at
+       FROM users
+       ORDER BY id DESC`
     );
     await conn.end();
     res.json(rows);
