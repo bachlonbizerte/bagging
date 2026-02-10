@@ -8,8 +8,8 @@ app.use(express.json());
 
 // === CONFIG DB AVEC VARIABLES D'ENV (Render + Railway) ===
 const dbConfig = {
-  host: process.env.DB_HOST,               // ex: junction.proxy.rlwy.net
-  port: process.env.DB_PORT || 3306,       // ex: 54997 (sinon 3306 par défaut)
+  host: process.env.DB_HOST,               // ex: mainline.proxy.rlwy.net
+  port: process.env.DB_PORT || 3306,       // ex: 16259 (sinon 3306 par défaut)
   user: process.env.DB_USER,               // ex: root
   password: process.env.DB_PASS,           // mot de passe Railway
   database: process.env.DB_NAME,           // ex: railway
@@ -38,6 +38,21 @@ app.post('/api/users', async (req, res) => {
     );
     await conn.end();
     res.status(201).json({ message: 'User créé' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+// GET /api/users -> liste des inscriptions
+app.get('/api/users', async (req, res) => {
+  try {
+    const conn = await getConnection();
+    const [rows] = await conn.execute(
+      'SELECT badge_id, name, email, role, created_at FROM users ORDER BY id DESC'
+    );
+    await conn.end();
+    res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Erreur serveur' });
@@ -108,5 +123,4 @@ app.get('/api/movements', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log('API running on port ' + PORT);
-});
+  console.log('API running on port ' + 
